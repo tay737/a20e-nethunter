@@ -34,12 +34,54 @@ Two more things confirm the vendor gadget is the problem rather than the app:
 - Every link change is logged by the vendor hook (`config_usb_cfg_link`, `gsi_boot`),
   and `drivers/usb/gadget/configfs.c:853` warns when an unexpected function is linked.
 
-So this needs a kernel change: let the Exynos/GSI configfs path accept `hid` functions, or
-build the gadget without the vendor hooks. The R15 tree is not currently on disk
-(`/Volumes/a20e-HFSX` is unmounted), so the patch cannot be built right now.
+### Root cause
 
-Until then, USB Arsenal cannot work on this kernel. Bluetooth (HID over BT is a different
-path) and KeX are unaffected.
+`CONFIG_USB_CONFIGFS_UEVENT` is enabled in this kernel, so `config_usb_cfg_link()` in
+`drivers/usb/gadget/configfs.c` parks every newly linked function on `gi->linked_func`
+instead of `cfg->func_list`. The only code that ever moves a function across is the
+Samsung "GSI adb" special case:
+
+```c
+if (strcmp(cn->configuration, "adb") == 0) {
+    list_for_each_entry_safe(f, tmp, &gi->linked_func, list) {
+        if (strcmp(f->name, "adb") == 0) {
+            printk("usb: %s: GSI adb works(%s)\n", __func__, f->name);
+            list_move_tail(&f->list, &cfg->func_list);
+        }
+    }
+}
+```
+
+`configfs_composite_bind()` then iterates `cfg->func_list` only:
+
+```c
+list_for_each_entry_safe(f, tmp, &cfg->func_list, list) {
+    list_del(&f->list);
+    ret = usb_add_function(c, f);
+```
+
+A `hid` function therefore sits on `linked_func` forever. Its `->bind()` never runs, so
+`hidg_bind()` never creates `/dev/hidg0`, and if nothing else is in the config the bind
+fails outright with `-22` / "needs at least one function".
+
+### Fix
+
+`patches/0006-usb-gadget-bind-linked-functions.patch` moves everything staged on
+`gi->linked_func` into the configuration being bound, before the emptiness check. The adb
+path keeps working the way it did, and functions configfs actually linked now attach.
+
+```sh
+./scripts/enable-usb-hid-gadget.sh /path/to/kernel-tree   # applies the patch, enables f_hid
+# then build the Image and flash it
+```
+
+The patch is written against the upstream Eureka `master` tree
+(`drivers/usb/gadget/configfs.c`, 2582 lines) and applies cleanly there. It has **not** been
+compiled or flashed, because the R15 tree lives on the currently unmounted
+`/Volumes/a20e-HFSX` volume.
+
+Once a patched kernel is running, USB Arsenal gets a working `/dev/hidg0`. Bluetooth (a
+different HID path) and KeX are unaffected either way.
 
 ## NFC Arsenal: no NFC hardware in this device
 
