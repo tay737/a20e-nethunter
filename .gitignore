@@ -1,13 +1,6 @@
-# Kernel and module binaries are not committed (size + no source value).
-*.zip
-*.apk
-*.img
-!modules/**/*.zip
-kernel/
-tools/
-
-# Captured device state can contain identifiers.
-logs/*.txt.bak
+.DS_Store
+# device dumps that can carry identifiers
 logs/getprop.txt
 logs/dmesg.log
-.DS_Store
+# the 318 MB NetHunter module lives in the GitHub release, not in git
+modules/Nethunter_for_KernelSU-2026.2.zip
