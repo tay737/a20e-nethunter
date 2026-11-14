@@ -28,13 +28,13 @@ jobs:
       - name: Fetch Eureka R15-AOSP kernel
         run: |
           git clone --depth 1 --branch R15-AOSP \
-            https://github.com/eurekadevelopment/Eureka-Kernel.git kernel
-          cd kernel
+            https://github.com/eurekadevelopment/Eureka-Kernel.git ksrc
+          cd ksrc
           git rev-parse --short HEAD
 
       - name: Pin KernelSU v0.9.4
         run: |
-          cd kernel
+          cd ksrc
           rm -rf KernelSU
           git clone --depth 1 --branch v0.9.4 https://github.com/tiann/KernelSU.git KernelSU
           ls KernelSU/kernel | head
@@ -42,13 +42,13 @@ jobs:
 
       - name: Apply the USB HID gadget patch
         run: |
-          cd kernel
+          cd ksrc
           patch -p1 --forward < "$GITHUB_WORKSPACE/patches/0006-usb-gadget-bind-linked-functions.patch"
           grep -n "Attach whatever configfs linked" drivers/usb/gadget/configfs.c
 
       - name: Configure
         run: |
-          cd kernel
+          cd ksrc
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
           export ANDROID_MAJOR_VERSION=12
@@ -63,7 +63,7 @@ jobs:
 
       - name: Build Image
         run: |
-          cd kernel
+          cd ksrc
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
           export ANDROID_MAJOR_VERSION=12
@@ -73,5 +73,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Image-r15-hid
-          path: kernel/out/arch/arm64/boot/Image
+          path: ksrc/out/arch/arm64/boot/Image
           if-no-files-found: error
