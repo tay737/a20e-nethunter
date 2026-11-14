@@ -1,5 +1,12 @@
 # Artifacts
 
+**Where to get them**
+
+- Kernels, helper modules and APKs: committed in this repo — `kernel/`, `modules/`, `tools/`
+- NetHunter module (318 MB, too big for a normal git file): release asset
+  [v1.0](https://github.com/tay737/a20e-nethunter/releases/download/v1.0/Nethunter_for_KernelSU-2026.2.zip)
+
+
 Binaries are not in git. These are the exact files used on the device, with checksums.
 
 | File | Size (bytes) | MD5 |

@@ -173,8 +173,10 @@ docs/       artifact checksums and install notes
 
 ## Artifacts
 
-Binaries stay out of git. `docs/ARTIFACTS.md` has the sizes, checksums and the
-upstream sources for the kernel tree, the NetHunter module, KernelSU and the ADB module.
+Kernel zips, the helper modules and the APKs live in `kernel/`, `modules/` and `tools/`.
+The 318 MB NetHunter module is attached to the
+[v1.0 release](https://github.com/tay737/a20e-nethunter/releases/tag/v1.0).
+`docs/ARTIFACTS.md` has sizes, checksums and upstream sources.
 
 ## Credits
 
