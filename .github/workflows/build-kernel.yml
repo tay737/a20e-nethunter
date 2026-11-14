@@ -1,0 +1,77 @@
+name: build-kernel
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-kernel.yml'
+      - 'patches/0006-*'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    container: ubuntu:20.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git curl ca-certificates build-essential bc bison flex libssl-dev \
+            libelf-dev cpio kmod zip xz-utils python3 gcc-aarch64-linux-gnu
+          aarch64-linux-gnu-gcc --version | head -1
+
+      - name: Fetch Eureka R15-AOSP kernel
+        run: |
+          git clone --depth 1 --branch R15-AOSP \
+            https://github.com/eurekadevelopment/Eureka-Kernel.git kernel
+          cd kernel
+          git rev-parse --short HEAD
+
+      - name: Pin KernelSU v0.9.4
+        run: |
+          cd kernel
+          rm -rf KernelSU
+          git clone --depth 1 --branch v0.9.4 https://github.com/tiann/KernelSU.git KernelSU
+          ls KernelSU/kernel | head
+          test -L drivers/kernelsu || ln -sfn ../KernelSU/kernel drivers/kernelsu
+
+      - name: Apply the USB HID gadget patch
+        run: |
+          cd kernel
+          patch -p1 --forward < "$GITHUB_WORKSPACE/patches/0006-usb-gadget-bind-linked-functions.patch"
+          grep -n "Attach whatever configfs linked" drivers/usb/gadget/configfs.c
+
+      - name: Configure
+        run: |
+          cd kernel
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export ANDROID_MAJOR_VERSION=12
+          make O=out ARCH=arm64 exynos7885-a20e_defconfig
+          for opt in KSU OVERLAY_FS USB_CONFIGFS_F_HID USB_CONFIGFS_UEVENT BT BT_HCIVHCI RFKILL; do
+            scripts/config --file out/.config -e "$opt"
+          done
+          make O=out ARCH=arm64 olddefconfig
+          for opt in KSU USB_CONFIGFS_F_HID USB_CONFIGFS_UEVENT; do
+            printf '%-28s %s\n' "$opt" "$(grep -E "^CONFIG_${opt}=" out/.config || echo MISSING)"
+          done
+
+      - name: Build Image
+        run: |
+          cd kernel
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export ANDROID_MAJOR_VERSION=12
+          make -j"$(nproc)" O=out ARCH=arm64 Image 2>&1 | tail -40
+          ls -lL out/arch/arm64/boot/Image
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Image-r15-hid
+          path: kernel/out/arch/arm64/boot/Image
+          if-no-files-found: error
