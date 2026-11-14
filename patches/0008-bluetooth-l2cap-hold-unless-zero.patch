@@ -1,0 +1,31 @@
+Bluetooth: L2CAP: add the missing l2cap_chan_hold_unless_zero()
+
+l2cap_core.c calls l2cap_chan_hold_unless_zero() when it looks a channel
+up by command identifier, but the function does not exist anywhere in this
+tree, and with CONFIG_BT=y clang refuses the implicit declaration:
+
+  net/bluetooth/l2cap_core.c:3989:9: error: implicit declaration of
+  function 'l2cap_chan_hold_unless_zero'
+
+The tree already keeps an atomic kref per channel, so implement it with
+kref_get_unless_zero(), which returns 0 when the last reference is gone.
+The call site already treats NULL as "no such channel".
+--- a/net/bluetooth/l2cap_core.c	2026-11-14 13:47:50
++++ b/net/bluetooth/l2cap_core.c	2026-11-14 13:47:50
+@@ -484,6 +484,16 @@
+ 	BT_DBG("chan %p orig refcnt %d", c, atomic_read(&c->kref.refcount));
+ 
+ 	kref_get(&c->kref);
++}
++
++static struct l2cap_chan *l2cap_chan_hold_unless_zero(struct l2cap_chan *c)
++{
++	BT_DBG("chan %p orig refcnt %d", c, atomic_read(&c->kref.refcount));
++
++	if (!kref_get_unless_zero(&c->kref))
++		return NULL;
++
++	return c;
+ }
+ 
+ void l2cap_chan_put(struct l2cap_chan *c)
