@@ -1,9 +1,7 @@
 #!/system/bin/sh
 # a20e stability: keep the screen awake and stop Android from entering doze/suspend,
 # because resuming from display-off wedges system_server on this kernel.
-MODDIR=${0%/*}
 LOG=/data/adb/a20e-stability.log
-echo "=== $(date) ===" > "$LOG"
 i=0
 while [ "$(getprop sys.boot_completed)" != "1" ] && [ $i -lt 120 ]; do
     sleep 2
