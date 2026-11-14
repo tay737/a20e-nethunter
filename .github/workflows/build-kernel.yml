@@ -22,8 +22,9 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends \
             git curl ca-certificates build-essential bc bison flex libssl-dev \
-            libelf-dev cpio kmod zip xz-utils python3 gcc-aarch64-linux-gnu
+            libelf-dev cpio kmod zip xz-utils python3 gcc-aarch64-linux-gnu clang lld llvm
           aarch64-linux-gnu-gcc --version | head -1
+          clang --version | head -1
 
       - name: Fetch Eureka R15-AOSP kernel
         run: |
@@ -72,7 +73,9 @@ jobs:
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
           export ANDROID_MAJOR_VERSION=12
-          make -j"$(nproc)" O=out ARCH=arm64 Image 2>&1 | tail -40
+          make -j"$(nproc)" O=out ARCH=arm64 Image \
+            CC=clang CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-gnu- 2>&1 | tail -40
           ls -lL out/arch/arm64/boot/Image
 
       - uses: actions/upload-artifact@v4
