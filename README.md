@@ -182,8 +182,9 @@ The 318 MB NetHunter module is attached to the
 
 - **USB HID / USB Arsenal** - the Exynos gadget never binds configfs-linked functions other
   than adb, so `/dev/hidg0` never appears. Root cause and fix in
-  `patches/0006-usb-gadget-bind-linked-functions.patch`; see `docs/HID-NFC-CAR-FINDINGS.md`.
-  The patched kernel still needs to be built and flashed.
+  `patches/0006-usb-gadget-bind-linked-functions.patch`; see `docs/HID-NFC-CAR-FINDINGS.md`
+  and `docs/HID-KERNEL-BUILD-NOTES.md`. The patch compiles, but a bootable kernel needs
+  the original Eureka tree from the unmounted volume.
 - **NFC Arsenal** - the SM-A202F has no NFC controller and the ROM has no NFC HAL.
 - **CArsenal** - works only with a USB serial CAN adapter attached (`/dev/ttyUSB0`).
 
