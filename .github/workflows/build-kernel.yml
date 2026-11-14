@@ -60,7 +60,10 @@ jobs:
           # start from the config the working kernel on the device was built with
           mkdir -p out
           cp "$GITHUB_WORKSPACE/build-configs/a20e-working.config" out/.config
-          make O=out ARCH=arm64 olddefconfig
+          # these Eureka-only int symbols have no default and would prompt
+          grep -q '^CONFIG_LITTLE_CPU_MASK=' out/.config || echo 'CONFIG_LITTLE_CPU_MASK=0' >> out/.config
+          grep -q '^CONFIG_BIG_CPU_MASK=' out/.config || echo 'CONFIG_BIG_CPU_MASK=0' >> out/.config
+          yes "" | make O=out ARCH=arm64 olddefconfig
           for opt in USB_CONFIGFS_F_HID OVERLAY_FS BT BT_HCIVHCI RFKILL; do
             scripts/config --file out/.config -e "$opt" || true
           done
