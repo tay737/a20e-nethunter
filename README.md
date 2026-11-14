@@ -30,9 +30,9 @@ A working NetHunter setup for the Exynos 7885 Galaxy A20e. The kernel is the Eur
 ported into it. On top of that sits the NetHunter KernelSU module with a Kali chroot,
 plus two small modules I wrote to keep the thing from freezing.
 
-The repo holds the patches, the module sources, the helper scripts and the notes. The
-flashable binaries are too big for git; `docs/ARTIFACTS.md` lists them with checksums
-and where they come from.
+The repo holds the patches, the module sources, the helper scripts, the notes and the
+flashable binaries. `docs/ARTIFACTS.md` lists every file with its checksum and where it
+came from.
 
 ## Status
 
