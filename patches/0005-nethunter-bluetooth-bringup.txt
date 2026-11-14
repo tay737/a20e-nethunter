@@ -1,0 +1,27 @@
+NetHunter Bluetooth (BlueBinder) bring-up on a20e
+
+Chain: Android Bluetooth radio  <-binder->  bluebinder (chroot)  <-/dev/vhci->  bluetoothd (chroot)
+
+Requirements / gotchas
+1. Android Bluetooth must be OFF. With Android BT on, the HAL is already claimed and
+   bluebinder reports "Bluetooth binder service failed" (the HAL returns
+   INITIALIZATION_ERROR). With Android BT off it prints
+   "Bluetooth initialized successfully".
+2. /dev/binderfs must be mounted inside the chroot, otherwise the
+   /dev/binder -> /dev/binderfs/binder symlinks dangle and the HAL is unreachable:
+       mkdir -p $CHROOT/dev/binderfs
+       mount -t binder binder $CHROOT/dev/binderfs
+3. Order matters: bluebinder first (it creates a fresh vhci controller, e.g. hci1),
+   then bluetoothd, then `hciconfig hciN up` on that newest controller. If bluetoothd
+   started first it binds the stale hci0 and bluebinder logs
+   "Writing packet from HAL to vhci device failed: No such device or address".
+4. dbus must be running (see 0004-nethunter-chroot-dbus-capabilities.patch).
+
+Everything is automated in scripts/nh-bt.sh, installed on the device as
+/data/local/nh-bt.sh  (run as root:  su -c /data/local/nh-bt.sh ).
+
+Verified output:
+  [2/5] dbus                -> dbus is running.
+  [4/5] bluebinder          -> Bluetooth initialized successfully / successfully initialized bluetooth
+  [5/5] controllers         -> hci1: Type: Primary  Bus: Virtual, BD Address D8:55:75:75:06:22, UP RUNNING
+  hcitool -i hci1 inq       -> "Inquiring ..." (controller enters INQUIRY state)

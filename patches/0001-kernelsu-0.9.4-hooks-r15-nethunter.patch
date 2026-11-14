@@ -1,0 +1,98 @@
+KernelSU 0.9.4 hook port into the Eureka R15-Nethunter tree (branch R15-Nethunter).
+KernelSU submodule: tiann/KernelSU @ 109442f8 (KernelSU version 11838).
+Line numbers are from that tree; content is the exact text applied.
+
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ (appended at end of file)
++source "drivers/kernelsu/Kconfig"
+
+diff --git a/drivers/Makefile b/drivers/Makefile
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ (appended at end of file)
++obj-$(CONFIG_KSU) += kernelsu/
+
+# drivers/kernelsu is a symlink: drivers/kernelsu -> ../KernelSU/kernel
+#   ln -sfn ../KernelSU/kernel drivers/kernelsu
+
+diff --git a/fs/exec.c b/fs/exec.c
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1836,6 +1836,9 @@
++extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
++			void *envp, int *flags);
++
+ static int do_execveat_common(int fd, struct filename *filename,
+ 			      struct user_arg_ptr argv,
+ 			      struct user_arg_ptr envp,
+@@ -1845,6 +1848,8 @@
+ 	int retval;
+ 
++	ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
++
+ 	if (IS_ERR(filename))
+ 		return PTR_ERR(filename);
+
+diff --git a/fs/open.c b/fs/open.c
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -350,6 +350,9 @@
++extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
++			 int *flags);
++
+ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
+ {
+ 	const struct cred *old_cred;
+@@ -360,6 +363,8 @@
+ 	unsigned int lookup_flags = LOOKUP_FOLLOW;
+ 
++	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
++
+ 	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
+ 		return -EINVAL;
+
+diff --git a/fs/read_write.c b/fs/read_write.c
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -446,6 +446,10 @@
+ EXPORT_SYMBOL(__vfs_read);
+ 
++extern bool ksu_vfs_read_hook __read_mostly;
++extern int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
++			size_t *count_ptr, loff_t **pos);
++
+ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+ {
+ 	ssize_t ret;
+@@ -452,6 +456,7 @@
+ 	ssize_t ret;
+ 
++	ksu_handle_vfs_read(&file, &buf, &count, &pos);
++
+ 	if (!(file->f_mode & FMODE_READ))
+ 		return -EBADF;
+
+diff --git a/fs/stat.c b/fs/stat.c
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -88,6 +88,8 @@
+ EXPORT_SYMBOL(vfs_fstat);
+ 
++extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
++
+ int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
+ 		int flag)
+ {
+@@ -95,6 +97,8 @@
+ 	unsigned int lookup_flags = 0;
+ 
++	ksu_handle_stat(&dfd, &filename, &flag);
++
+ 	if ((flag & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT |
+ 		      AT_EMPTY_PATH)) != 0)
+ 		goto out;
+
+# security/selinux/hooks.c needed NO change on this tree: check_nnp_nosuid() already
+# carried the ksu_sid / "u:r:su:s0" allowance block.

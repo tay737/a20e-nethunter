@@ -1,0 +1,19 @@
+Kali NetHunter kernel builder patches/4.04 applied to the Eureka tree
+(8 patches; 5 skipped as conflicting with this Exynos 7885 4.4.302 tree)
+
+APPLIED
+  add-rtl88xxau-5.6.4.2-drivers-4.04
+  add-ub500-to-btusb
+  add-wifi-injection-4.04
+  fix-ath9k-freq2fbin
+  fix-ath9k-naming-conflict
+  fix-hci-uart
+  fix-rt2800-injection-4.04
+  v2-2-6-mac80211-refactor-monitor-representation-in-sdata
+
+SKIPPED (context conflicts, not needed for USB HID / BlueBinder)
+  5 further 4.04 patches from the same set
+
+Build-time manual fixes that were required (Eureka R24U lineage):
+  net/bluetooth/l2cap_core.c : add l2cap_chan_hold_unless_zero()
+  drivers/usb/gadget/function/f_hid.c : add spinlock_t read_spinlock + spin_lock_init()

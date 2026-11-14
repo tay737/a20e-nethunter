@@ -1,0 +1,10 @@
+GNU General Public License v2.0
+
+The kernel changes in patches/ are derived from the Linux kernel (GPL-2.0) and the
+Eureka / NetHunter kernel trees, and stay under GPL-2.0.
+
+The scripts and module sources written for this device (scripts/, modules/) are
+released under GPL-2.0 as well, so the whole repository can be redistributed under
+the same terms.
+
+Full text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html

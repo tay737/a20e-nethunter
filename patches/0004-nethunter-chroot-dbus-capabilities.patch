@@ -1,0 +1,26 @@
+NetHunter Kali chroot: make dbus start on Android.
+
+Symptom:  service dbus start  ->  "dbus is not running ... failed!"
+Cause:    dbus-daemon runs as root and then tries to drop capabilities.
+          Android's SELinux policy refuses capset (even with CapEff=ffffffffffffffff),
+          so it dies with:
+              Failed to drop capabilities: Operation not permitted
+Fix:      start dbus-daemon directly as the messagebus user, so there is nothing
+          to drop. start-stop-daemon gets --chuid $DAEMONUSER.
+
+Applied in /data/local/nhsystem/kali-arm64/etc/init.d/dbus
+(original kept as /etc/init.d/dbus.orig inside the chroot)
+
+--- a/etc/init.d/dbus
++++ b/etc/init.d/dbus
+@@ start_it_up()
+   log_daemon_msg "Starting $DESC" "$NAME"
+   start-stop-daemon --start --quiet --pidfile $PIDFILE \
+-    --exec $DAEMON -- --system $PARAMS
++    --chuid $DAEMONUSER --exec $DAEMON -- --system $PARAMS
+   log_end_msg $?
+
+Verification:
+  service dbus start   -> "Starting system message bus: dbus."
+  service dbus status  -> "dbus is running."
+  /run/dbus/pid and /run/dbus/system_bus_socket owned by messagebus:messagebus

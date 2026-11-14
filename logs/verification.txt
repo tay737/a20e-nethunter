@@ -1,0 +1,83 @@
+== device
+a20e
+Linux kali 4.4.302-p6 #5 SMP PREEMPT Fri Nov 13 19:52:35 GMT 2026 aarch64
+1
+10
+2147483647
+7
+== modules
+[
+  {
+    "template": "1510",
+    "version": "2026.2",
+    "web": "false",
+    "versionCode": "20260200",
+    "description": "Kali NetHunter apps, firmware, and arm64 chroot for KernelSU. Primary test target: Xiaomi 15; other arm64 devices are experimental.",
+    "name": "Kali-NetHunter for KernelSU",
+    "remove": "false",
+    "id": "Kali-NetHunter-Ksu",
+    "enabled": "true",
+    "author": "Nethunter-Team @ gitlab & Uranium92",
+    "update": "false"
+  },
+  {
+    "enabled": "true",
+    "versionCode": "1",
+    "remove": "false",
+    "id": "a20e-stability",
+    "version": "1.0",
+    "web": "false",
+    "update": "false",
+    "name": "a20e Stability (stay awake, no doze)",
+    "author": "tay737"
+  },
+  {
+    "version": "v1.0",
+    "update": "false",
+    "remove": "false",
+    "id": "wireless-adb",
+    "name": "Wireless ADB",
+    "versionCode": "1",
+    "description": "Persistent wireless ADB debugging — auto-enables on boot",
+    "enabled": "true",
+    "web": "true",
+    "author": "dracediax"
+  }
+]
+== overlay
+-rwxr-xr-x 1 root root    5888 2026-11-14 00:18 /system/bin/screenres
+-rwxr-xr-x 1 root root 2433776 2026-10-23 10:29 /system/xbin/busybox_nh-1.38.0
+-rwxr-xr-x 1 root root   18256 2026-10-23 10:29 /system/xbin/hid-keyboard
+== root
+uid=0(root) gid=0(root) groups=0(root) context=u:r:su:s0
+== chroot
+Nmap version 7.991 ( https://nmap.org )
+Framework Version: 6.5.7-dev
+Hydra v9.7 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+== apps
+package:com.offsec.nethunter
+package:com.offsec.nethunter.kex
+package:com.offsec.nethunter.store.privileged
+package:com.offsec.nethunter.store
+package:com.offsec.nhterm
+== android
+1
+0
+  mWakefulness=Awake
+Failed to write while dumping service power: Broken pipe
+== dbus/bt
+dbus is running.
+bluetooth is running.
+hci1:	Type: Primary  Bus: Virtual
+	UP RUNNING 
+hci0:	Type: Primary  Bus: Virtual
+	UP RUNNING 
+== bluebinder
+Bluetooth initialized successfully
+successfully initialized bluetooth
+== modules
+3
+== overlay
+/system/bin/screenres
+/system/xbin/busybox_nh-1.38.0
+/system/xbin/hid-keyboard

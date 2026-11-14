@@ -1,0 +1,12 @@
+diff --git a/arch/arm64/configs/exynos7885-a20e_defconfig b/arch/arm64/configs/exynos7885-a20e_defconfig
+--- a/arch/arm64/configs/exynos7885-a20e_defconfig
++++ b/arch/arm64/configs/exynos7885-a20e_defconfig
+@@ KernelSU + the NetHunter options that had only ever existed in the build tree's
+@@ .config (regenerating the config silently dropped them, losing /dev/vhci).
++CONFIG_KSU=y
++CONFIG_OVERLAY_FS=y
++CONFIG_BT=y
++CONFIG_BT_HCIVHCI=y
++CONFIG_RFKILL=y
++CONFIG_USB_CONFIGFS_F_HID=y
++CONFIG_USB_CONFIGFS_UEVENT=y

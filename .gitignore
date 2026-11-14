@@ -1,0 +1,13 @@
+# Kernel and module binaries are not committed (size + no source value).
+*.zip
+*.apk
+*.img
+!modules/**/*.zip
+kernel/
+tools/
+
+# Captured device state can contain identifiers.
+logs/*.txt.bak
+logs/getprop.txt
+logs/dmesg.log
+.DS_Store

@@ -1,0 +1,26 @@
+== dbus
+dbus is running.
+total 4
+-rw-r--r--. 1 messagebus messagebus 6 Nov 14 01:50 pid
+srwxrwxrwx. 1 messagebus messagebus 0 Nov 14 01:50 system_bus_socket
+== bluetooth
+bluetooth is running.
+Can't read local name on hci0: Connection timed out (110)
+hci1:	Type: Primary  Bus: Virtual
+	BD Address: AA:BB:CC:DD:EE:FF  ACL MTU: 1021:20  SCO MTU: 0:0
+	UP RUNNING 
+	RX bytes:0 acl:3 sco:0 events:97 errors:0
+	TX bytes:2591 acl:3 sco:0 commands:86 errors:0
+	Features: 0xbf 0xfe 0x8f 0xfe 0xdb 0xff 0x5b 0x87
+	Packet type: DM1 DM3 DM5 DH1 DH3 DH5 HV1 HV2 HV3 
+	Link policy: RSWITCH SNIFF 
+	Link mode: PERIPHERAL ACCEPT 
+	Name: 'BlueZ 5.87'
+	Class: 0x000000
+	Service Classes: Unspecified
+== bluebinder log
+delaying writing host command to controller until bt is up
+delaying writing host command to controller until bt is up
+Turning bluetooth on
+Bluetooth initialized successfully
+successfully initialized bluetooth
