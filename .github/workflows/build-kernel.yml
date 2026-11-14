@@ -56,7 +56,12 @@ jobs:
           for opt in KSU OVERLAY_FS USB_CONFIGFS_F_HID USB_CONFIGFS_UEVENT BT BT_HCIVHCI RFKILL; do
             scripts/config --file out/.config -e "$opt"
           done
+          # the a20e defconfig is a clang config; this build uses gcc 9
+          for opt in LTO_CLANG THINLTO LLVM_POLLY CFI_CLANG CFI; do
+            scripts/config --file out/.config -d "$opt" || true
+          done
           make O=out ARCH=arm64 olddefconfig
+          grep -E "^CONFIG_(LTO|THINLTO|LLVM_POLLY|KSU)" out/.config || echo "lto/ksu symbols off" 
           for opt in KSU USB_CONFIGFS_F_HID USB_CONFIGFS_UEVENT; do
             printf '%-28s %s\n' "$opt" "$(grep -E "^CONFIG_${opt}=" out/.config || echo MISSING)"
           done
