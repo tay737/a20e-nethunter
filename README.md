@@ -178,6 +178,13 @@ The 318 MB NetHunter module is attached to the
 [v1.0 release](https://github.com/tay737/a20e-nethunter/releases/tag/v1.0).
 `docs/ARTIFACTS.md` has sizes, checksums and upstream sources.
 
+## Known limits
+
+- **USB HID / USB Arsenal** - the Exynos vendor gadget rejects configurations that contain
+  a `hid` function, so `/dev/hidg0` never appears. See `docs/HID-NFC-CAR-FINDINGS.md`.
+- **NFC Arsenal** - the SM-A202F has no NFC controller and the ROM has no NFC HAL.
+- **CArsenal** - works only with a USB serial CAN adapter attached (`/dev/ttyUSB0`).
+
 ## Credits
 
 - [eurekadevelopment / ViP3R-KERNELs](https://github.com/ViP3R-KERNELs/Eureka-Kernel-Exynos7885-Q-R-S) for the kernel tree
