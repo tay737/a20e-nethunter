@@ -61,15 +61,34 @@ result lands in `arch/arm64/boot/Image`.
 ## Result
 
 ```
-Image    29,343,992 bytes
-md5      9c1c26d9355be5157bcf3806d1f8a5a1
-strings  hidg_bind present
-config   build-configs/a20e-r15-hid.config (defconfig + CONFIG_USB_CONFIGFS_F_HID=y)
+Image    30,073,272 bytes
+md5      1c7727debf7f5fe7ec205ee83b2b5a20
+strings  Linux version 4.4.177-g83e0cd25a-dirty (Homebrew clang version 23.1.5)
+         hidg_bind present
+config   build-configs/a20e-working.config + CONFIG_USB_CONFIGFS_F_HID=y
 ```
 
-The earlier CI attempt from `R15-AOSP` produced an `Image` that did not start at all;
-this one comes from the tree the working phone kernel was built from, so it is the first
-image worth flashing.
+Earlier attempts built with Apple clang and/or `exynos7885-a20e_defconfig` produced
+images that did not start: the defconfig one omitted the A20e panel drivers
+(`S6E8FC0`, decon mDNIe), and the Apple-clang one hung on the splash screen. This image
+is built from the phone's own config with the right compiler, which is the first one
+worth flashing.
+
+## Two traps found while flashing it
+
+**`CC=clang` is Apple's clang on this machine.** `/usr/bin/clang` is what bare
+`clang` resolves to here, and the image it produced reported
+`Apple clang version 21.0.0` in `strings` — it hung on the splash screen. The phone's
+working kernel reports `Homebrew clang version 23.1.5`, so name the Homebrew binary
+explicitly (`/opt/homebrew/opt/llvm/bin/clang`). Check with
+`strings -a arch/arm64/boot/Image | grep 'Linux version'` before flashing.
+
+**The tree is 4.4.177, the phone runs 4.4.302.** This checkout's `Makefile` says
+`SUBLEVEL = 177` and has a single `main` branch; the kernel on the phone reports
+`4.4.302-p6`, so it was built from the newer Eureka (vip3r) tree that is not on this
+machine. The R15.1.1 defconfig still lines up with the device config, but a 177 image
+is not the same code base as the 302 one and may not boot this ROM; keep that in mind
+before blaming the HID patches.
 
 ## Still unproven
 

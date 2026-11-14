@@ -17,7 +17,10 @@ if [ -z "$TREE" ] || [ ! -f "$TREE/Makefile" ]; then
 fi
 
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-CLANG=${CLANG:-/usr/bin/clang}
+# Use Homebrew's clang, not /usr/bin/clang: Apple clang produces an image that
+# reports "Apple clang version 21" and does not boot, while the working phone
+# kernel was built with Homebrew clang 23.1.5.
+CLANG=${CLANG:-/opt/homebrew/opt/llvm/bin/clang}
 LLD_BIN=${LLD_BIN:-$(command -v ld.lld || true)}
 CROSS=${CROSS_COMPILE:-aarch64-elf-}
 JOBS=${JOBS:-$(sysctl -n hw.ncpu)}
