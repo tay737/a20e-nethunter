@@ -1,0 +1,13 @@
+diff --git a/drivers/misc/tzdev/3.0/tz_deploy_tzar.c b/drivers/misc/tzdev/3.0/tz_deploy_tzar.c
+index 4baa82f6..fe8b6135 100644
+--- a/drivers/misc/tzdev/3.0/tz_deploy_tzar.c
++++ b/drivers/misc/tzdev/3.0/tz_deploy_tzar.c
+@@ -32,7 +32,7 @@
+ __asm__ (
+   ".section .init.data,\"aw\"\n"
+   "tzdev_tzar_begin:\n"
+-  ".incbin \"" KBUILD_SRC "/drivers/misc/tzdev/3.0/startup.tzar\"\n"
++  ".incbin \"drivers/misc/tzdev/3.0/startup.tzar\"\n"
+   "tzdev_tzar_end:\n"
+   ".previous\n"
+ );

@@ -1,0 +1,34 @@
+diff --git a/lib/Makefile b/lib/Makefile
+index 5b602743..0cf0c97f 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -224,3 +224,4 @@ quiet_cmd_build_OID_registry = GEN     $@
+ clean-files	+= oid_registry_data.c
+ 
+ obj-$(CONFIG_UCS2_STRING) += ucs2_string.o
++obj-y += stpcpy.o
+diff --git a/lib/stpcpy.c b/lib/stpcpy.c
+new file mode 100644
+index 00000000..43f2901b
+--- /dev/null
++++ b/lib/stpcpy.c
+@@ -0,0 +1,19 @@
++/*
++ * stpcpy - copy a string returning a pointer to its end
++ *
++ * Newer compilers turn "strcpy(dst, src) + strlen(src)" style code into
++ * stpcpy() calls, which this 4.4 tree does not provide. Supply it so the
++ * kernel links with clang 23 like it did with the vendor gcc.
++ */
++
++#include <linux/string.h>
++#include <linux/export.h>
++
++char *stpcpy(char *dest, const char *src)
++{
++	size_t len = strlen(src);
++
++	memcpy(dest, src, len + 1);
++	return dest + len;
++}
++EXPORT_SYMBOL(stpcpy);

@@ -112,23 +112,30 @@ chroot $R /bin/bash -c 'apt-get update && apt-get install -y --no-install-recomm
 
 ## Building the kernel
 
-You need the kernel tree, KernelSU checked out inside it, and the NetHunter patches
-applied. `scripts/build-kernel.sh` wraps the compile:
+The kernel is Eureka's R15.1.1 tree for the A20e, built locally on this Mac with
+Homebrew clang 23 and Homebrew LLD — the same toolchain as the working `4.4.302-p6`
+kernel on the phone. The complete tree is attached to the
+[v1.1 release](https://github.com/tay737/a20e-nethunter/releases/tag/v1.1) as
+`eureka-r15-tree.tar.xz`, because it cannot be checked out on a normal Mac volume:
+`net/netfilter/xt_TCPMSS.c` and `xt_tcpmss.c` differ only by case, and APFS collides
+them. Build it on a case-sensitive volume:
 
 ```sh
-git clone -b R15-Nethunter https://github.com/ViP3R-KERNELs/Eureka-Kernel-Exynos7885-Q-R-S kernel
-cd kernel && git clone https://github.com/tiann/KernelSU && git -C KernelSU checkout 109442f8
-ln -sfn ../KernelSU/kernel drivers/kernelsu
-patch -p1 < ../patches/0001-kernelsu-0.9.4-hooks-r15-nethunter.patch
-patch -p1 < ../patches/0002-exynos7885-a20e_defconfig.patch
-../scripts/build-kernel.sh . out
+hdiutil create -size 20g -fs "Case-sensitive APFS" -type SPARSE \
+  -volname a20e-kernel-cs ~/Downloads/a20e-kernel-cs.sparseimage
+hdiutil attach ~/Downloads/a20e-kernel-cs.sparseimage
+mkdir -p /Volumes/a20e-kernel-cs/tree
+tar -xJf eureka-r15-tree.tar.xz -C /Volumes/a20e-kernel-cs/tree
+./scripts/build-local-macos.sh /Volumes/a20e-kernel-cs/tree
 ```
 
-The build prints `-- KernelSU version: 11838` and gives you `out/arch/arm64/boot/Image`
-around 31 MB. AnyKernel3 package it as Image only.
+The script applies no patches itself; the tarball already carries `0006`, `0007`,
+`0009`, `0010` and `0011`. It configures `exynos7885-a20e_defconfig` plus
+`CONFIG_USB_CONFIGFS_F_HID=y`, builds `arch/arm64/boot/Image` (~29 MB) and prints its
+md5. `docs/HID-KERNEL-BUILD-NOTES.md` explains each flag and workaround.
 
-Building on Apple silicon means Homebrew clang. The Kali NetHunter prebuilt toolchains
-are Linux x86-64 and will not run on macOS.
+`scripts/build-kernel.sh` is the older Linux/CI path (GNU gcc, `R15-AOSP`); it produced
+an image that did not boot on this ROM, so it is kept for reference only.
 
 ## Things that bit me
 
@@ -164,11 +171,12 @@ Stock dtb/dtbo plus this Image boots.
 ## Repo layout
 
 ```
-patches/    kernel and chroot patches, in the order they were applied
-modules/    source of the a20e-stability KernelSU module
-scripts/    build-kernel.sh and nh-bt.sh (Bluetooth bring-up)
-logs/       verification output from the working device
-docs/       artifact checksums and install notes
+patches/         kernel and chroot patches, in the order they were applied
+modules/         source of the a20e-stability KernelSU module
+scripts/         build-local-macos.sh, the LLD shim and nh-bt.sh (Bluetooth bring-up)
+build-configs/   the device's /proc/config.gz and the config this build used
+logs/            verification output from the working device
+docs/            artifact checksums and build notes
 ```
 
 ## Artifacts
