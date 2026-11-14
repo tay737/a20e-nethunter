@@ -45,7 +45,9 @@ jobs:
         run: |
           cd ksrc
           patch -p1 --forward < "$GITHUB_WORKSPACE/patches/0006-usb-gadget-bind-linked-functions.patch"
+          patch -p1 --forward < "$GITHUB_WORKSPACE/patches/0007-f-hid-fix-spinlock-name.patch"
           grep -n "Attach whatever configfs linked" drivers/usb/gadget/configfs.c
+          grep -n "spin_lock_irqsave(&hidg->spinlock, flags)" drivers/usb/gadget/function/f_hid.c | tail -2
 
       - name: Configure
         run: |

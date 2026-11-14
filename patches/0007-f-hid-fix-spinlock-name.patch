@@ -1,0 +1,30 @@
+usb: gadget: f_hid: fix the spinlock name in hidg_disable()
+
+The tree declares "spinlock_t spinlock" in struct f_hidg and uses
+hidg->spinlock everywhere else, but hidg_disable() was left pointing at
+hidg->read_spinlock, which does not exist. Nothing noticed because
+CONFIG_USB_CONFIGFS_F_HID was never enabled in any defconfig, so f_hid.c
+was never compiled:
+
+  drivers/usb/gadget/function/f_hid.c:511:27: error: no member named
+  'read_spinlock' in 'struct f_hidg'
+
+Use the member that exists and that the rest of the driver locks.
+--- a/drivers/usb/gadget/function/f_hid.c	2026-11-14 13:27:53
++++ b/drivers/usb/gadget/function/f_hid.c	2026-11-14 13:27:53
+@@ -508,13 +508,13 @@
+ 	usb_ep_disable(hidg->in_ep);
+ 	usb_ep_disable(hidg->out_ep);
+ 
+-	spin_lock_irqsave(&hidg->read_spinlock, flags);
++	spin_lock_irqsave(&hidg->spinlock, flags);
+ 	list_for_each_entry_safe(list, next, &hidg->completed_out_req, list) {
+ 		free_ep_req(hidg->out_ep, list->req);
+ 		list_del(&list->list);
+ 		kfree(list);
+ 	}
+-	spin_unlock_irqrestore(&hidg->read_spinlock, flags);
++	spin_unlock_irqrestore(&hidg->spinlock, flags);
+ }
+ 
+ static int hidg_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
