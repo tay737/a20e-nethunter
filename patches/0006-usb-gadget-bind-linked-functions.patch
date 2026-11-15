@@ -1,38 +1,25 @@
-usb: gadget: configfs: bind functions that configfs linked
-
-On the Samsung/Exynos gadget, CONFIG_USB_CONFIGFS_UEVENT puts every
-configfs-linked function on gi->linked_func instead of cfg->func_list,
-and only the "adb" special case in config_usb_cfg_link() ever moves one
-into a configuration. configfs_composite_bind() then walks cfg->func_list
-alone, so any other function never reaches usb_add_function(), never gets
-its ->bind(), and the gadget either starts without it or fails:
-
-  Config b/1 of g1 needs at least one function.
-  configfs-gadget 13600000.dwc3: failed to start g1: -22
-
-For f_hid that means hidg_bind() never runs, so /dev/hidg0 is never
-created and Kali NetHunter's USB Arsenal (which writes the gadget through
-configfs and then checks /dev/hidg0) reports "Failed to set USB function."
-
-Move whatever is staged on gi->linked_func into the configuration that is
-about to be bound, before the "at least one function" check. Behaviour for
-the GSI adb path is unchanged: adb was already moved there by the special
-case, and everything configfs linked to the gadget now actually attaches.
---- a/drivers/usb/gadget/configfs.c	2026-11-14 12:56:10
-+++ b/drivers/usb/gadget/configfs.c	2026-11-14 12:56:10
-@@ -1648,6 +1648,31 @@
+diff --git a/drivers/usb/gadget/configfs.c b/drivers/usb/gadget/configfs.c
+index bbcf45b3..e75b437c 100755
+--- a/drivers/usb/gadget/configfs.c
++++ b/drivers/usb/gadget/configfs.c
+@@ -1648,6 +1648,38 @@ static int configfs_composite_bind(struct usb_gadget *gadget,
  	}
  
  
 +#ifdef CONFIG_USB_CONFIGFS_UEVENT
 +	/*
-+	 * Functions linked through configfs are parked on gi->linked_func and,
-+	 * in stock Samsung code, only the "adb" special case below ever moves
-+	 * one into a configuration. Everything else (f_hid, for example) stays
-+	 * stranded there, never reaches usb_add_function() and therefore never
-+	 * binds: no /dev/hidg0, and the gadget start fails with -EINVAL once the
-+	 * configuration ends up empty. Attach whatever configfs linked to the
-+	 * configuration that is about to be bound.
++	 * Samsung parks every configfs-linked function on gi->linked_func and,
++	 * in stock code, only the hardcoded "adb" path ever moves one into a
++	 * configuration. Anything else (f_hid, for example) never reaches
++	 * usb_add_function(), so a hid-only configuration binds empty
++	 * ("needs at least one function", -EINVAL) and /dev/hidg0 never appears.
++	 *
++	 * Only fall back to the parked list when the configuration would
++	 * otherwise be empty: that is exactly the "nothing but the function the
++	 * user linked" case. When stock code already attached something (at boot
++	 * it attaches adb while the remaining init links stay parked) every
++	 * parked function must stay out, otherwise the composite gains a dozen
++	 * functions the platform never intended to expose.
 +	 */
 +	if (!list_empty(&gi->linked_func)) {
 +		struct usb_configuration *cfg_c;
@@ -43,8 +30,10 @@ case, and everything configfs linked to the gadget now actually attaches.
 +						 struct usb_configuration, list);
 +		if (cfg_c) {
 +			cf = container_of(cfg_c, struct config_usb_cfg, c);
-+			list_for_each_entry_safe(sf, stmp, &gi->linked_func, list)
-+				list_move_tail(&sf->list, &cf->func_list);
++			if (list_empty(&cf->func_list)) {
++				list_for_each_entry_safe(sf, stmp, &gi->linked_func, list)
++					list_move_tail(&sf->list, &cf->func_list);
++			}
 +		}
 +	}
 +#endif

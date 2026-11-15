@@ -46,7 +46,8 @@ questions.
 ## The fix
 
 `patches/0006-usb-gadget-bind-linked-functions.patch` drains `linked_func` into
-the configuration being bound, just before the empty-config check:
+the configuration being bound, just before the empty-config check, but only
+when that configuration is still empty:
 
 ```c
 if (!list_empty(&gi->linked_func)) {
@@ -54,14 +55,42 @@ if (!list_empty(&gi->linked_func)) {
 					 struct usb_configuration, list);
 	if (cfg_c) {
 		cf = container_of(cfg_c, struct config_usb_cfg, c);
-		list_for_each_entry_safe(sf, stmp, &gi->linked_func, list)
-			list_move_tail(&sf->list, &cf->func_list);
+		if (list_empty(&cf->func_list)) {
+			list_for_each_entry_safe(sf, stmp, &gi->linked_func, list)
+				list_move_tail(&sf->list, &cf->func_list);
+		}
 	}
 }
 ```
 
-A kernel carrying this patch binds whatever configfs has linked, so a
-hid-only configuration reaches `usb_add_function()` and `hidg_bind()` runs.
+The `list_empty(&cf->func_list)` guard matters. At boot this ROM leaves a
+dozen init links parked (accessory, acm, mtp, ptp, rndis, midi, ...) while
+stock code attaches adb. Draining unconditionally drags all of them into the
+bound composite; guarding on an empty configuration leaves the boot path
+exactly as stock and only kicks in for the "nothing but the function I linked"
+case, which is what a HID-only gadget is.
+
+A kernel carrying this patch binds that linked function, so a hid-only
+configuration reaches `usb_add_function()` and `hidg_bind()` runs.
+
+## Booting: the panel config trap
+
+A build of this tree with the wrong display config bootloops on an A20e: the
+screen flashes white, goes black, and the device never reaches adb. The A40
+config (`CONFIG_EXYNOS_DECON_LCD_S6E8FC0_A40=y`, `SENSORS_A96T3X6_A40=y`) is
+what a plain `a40_00_stock_defconfig`-style config gives you. An A20e build
+needs at least
+
+```
+CONFIG_EXYNOS_DECON_LCD_HX83102D_A20E=y
+CONFIG_MACH_EXYNOS7885_A20e_OPEN=y
+```
+
+Use `exynos7885-a20e_defconfig` as the base (or the config in
+`build-configs/a20e-tree302-ksu-hid.config`, which is the A20e config with
+KernelSU and HID enabled). `CONFIG_CUSTOM_BACKLIGHT_SYSFS_NODE=y` is mandatory:
+the dpu_7885 panel drivers reference
+`struct lcd_info::custom_brightness_enable` unconditionally.
 
 ## Building it
 
