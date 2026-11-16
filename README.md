@@ -112,6 +112,11 @@ chroot $R /bin/bash -c 'apt-get update && apt-get install -y --no-install-recomm
 
 ## Building the kernel
 
+**Prebuilt kernel:** the [v1.2 release](https://github.com/tay737/a20e-nethunter/releases/tag/v1.2)
+ships `a20e-r15-hid-v1.2.zip` (flash in TWRP) and the raw `Image`. That image has
+working USB HID — `/dev/hidg0` exists once a HID gadget is armed — with KernelSU
+and adb unchanged.
+
 The kernel is Eureka's R15.1.1 tree for the A20e, built locally on this Mac with
 Homebrew clang 23 and Homebrew LLD — the same toolchain as the working `4.4.302-p6`
 kernel on the phone. The complete tree is attached to the

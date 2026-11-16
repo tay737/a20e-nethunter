@@ -3,6 +3,8 @@
 **Where to get them**
 
 - Kernels, helper modules and APKs: committed in this repo — `kernel/`, `modules/`, `tools/`
+- Working HID kernel (flashable): [v1.2](https://github.com/tay737/a20e-nethunter/releases/tag/v1.2) —
+  `a20e-r15-hid-v1.2.zip` for TWRP and the raw `a20e-r15-hid-v1.2-Image`
 - NetHunter module (318 MB, too big for a normal git file): release asset
   [v1.0](https://github.com/tay737/a20e-nethunter/releases/download/v1.0/Nethunter_for_KernelSU-2026.2.zip)
 
@@ -17,6 +19,8 @@ These are the exact files used on the device, with checksums.
 | `Nethunter_for_KernelSU-2026.2.zip` | 318548707 | `7f2c329401775b7f66e9403f13caf89d` |
 | `a20e-stability.zip` | 1544 | `9a6fddcff211092d6012d240125040f3` |
 | `wireless-adb-v1.0.zip` | 17795 | `92a76435e97b23582562ff55316f72e5` |
+| `a20e-r15-hid-v1.2.zip` | 13631729 | `b445cf8cb216f1f58851f9a5bdabf06a` |
+| `a20e-r15-hid-v1.2-Image` | 28579176 | `30afc243bc1ddd825295dc398eee8949` |
 | `KernelSU_v0.9.4.apk` | 8453406 | `54cc03c1519e56ac819504ba73125a87` |
 | `KernelSU_v3.3.1.apk` | 13637206 | `c8d438ea5948522bfb5911da6ff3d91e` |
 | `Magisk-v31.1.zip` | 10679283 | `47976df1a67877e4a46886d8cf664845` |
