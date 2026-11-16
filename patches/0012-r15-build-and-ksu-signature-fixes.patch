@@ -1,0 +1,57 @@
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index c0395b30..cdc5e435 100755
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -41,7 +41,7 @@
+ #include <linux/cpumask.h>
+ #include <linux/cpu.h>
+ #include <linux/kobject.h>
+-#include <../base/base.h>
++#include "../base/base.h"
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/thermal.h>
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index ab4758bc..2c9085c0 100755
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -3043,7 +3043,7 @@ proc_integrity_instantiate(struct inode *dir, struct dentry *dentry,
+ 	struct inode *inode;
+ 	struct proc_inode *ei;
+ 
+-	inode = proc_pid_make_inode(dir->i_sb, task);
++	inode = proc_pid_make_inode(dir->i_sb, task, S_IFREG);
+ 	if (!inode)
+ 		goto out;
+ 
+diff --git a/include/linux/bpf.h b/include/linux/bpf.h
+index d6e6a235..6d120ecb 100755
+--- a/include/linux/bpf.h
++++ b/include/linux/bpf.h
+@@ -400,6 +400,8 @@ static inline struct bpf_prog *bpf_prog_get_type_path(const char *name,
+ 				enum bpf_prog_type type)
+ {
+ 	return ERR_PTR(-EOPNOTSUPP);
++}
++
+ static inline int __bpf_prog_charge(struct user_struct *user, u32 pages)
+ {
+ 	return 0;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index cb1716eb..b214e4ec 100755
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -5372,11 +5372,11 @@ static inline unsigned long task_util(struct task_struct *p)
+ 	return p->se.avg.util_avg;
+ }
+ 
++static unsigned int __maybe_unused sched_small_task_threshold = 102;
++
+ #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+ static unsigned int capacity_margin = 1280; /* ~20% margin */
+ 
+-static unsigned int __maybe_unused sched_small_task_threshold = 102;
+-
+ static inline unsigned long boosted_task_util(struct task_struct *task);
+ 
+ static inline bool __task_fits(struct task_struct *p, int cpu, int util)
