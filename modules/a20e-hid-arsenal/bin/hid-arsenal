@@ -1,0 +1,83 @@
+#!/system/bin/sh
+# a20e-hid-arsenal: bring up (or drop) a USB HID gadget on the Galaxy A20e.
+#
+#   hid-arsenal              HID keyboard + mouse, adb restored after 60 s
+#   hid-arsenal --keep       HID stays up until you run: hid-arsenal reset
+#   hid-arsenal reset        back to adb now
+#   hid-arsenal --delay 0    no automatic restore at all
+#
+# Enabling HID takes the port away from adb, so run this from a terminal on the
+# phone (Termux, NetHunter, TWRP) or accept losing the adb connection until the
+# watchdog restores it. The v1.2 kernel is required: without the configfs fix
+# the bind succeeds but /dev/hidg0 never appears.
+
+MOD=${MOD:-/data/adb/modules/a20e-hid-arsenal}
+BIN=${BIN:-$MOD/bin}
+LOG=${LOG:-/data/adb/a20e-hid-arsenal.log}
+G=/config/usb_gadget/g1
+
+KEEP=0
+DELAY=60
+ACTION=hid
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --keep) KEEP=1 ;;
+        --delay) shift; DELAY=${1:-60} ;;
+        -h|--help|help) ACTION=help ;;
+        hid|keyboard|mouse) ACTION=hid ;;
+        reset|adb) ACTION=reset ;;
+        *) echo "unknown option: $1" >&2; ACTION=help ;;
+    esac
+    shift
+done
+
+if [ "$ACTION" = help ]; then
+    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+    exit 1
+fi
+
+[ -d "$G" ] || { echo "[-] no /config/usb_gadget: this is not a configfs gadget kernel" >&2; exit 1; }
+[ -x "$BIN/usbarsenal-patched" ] || [ -f "$BIN/usbarsenal-patched" ] || {
+    echo "[-] $BIN/usbarsenal-patched is missing" >&2; exit 1; }
+
+VID=$(cat "$G/idVendor" 2>/dev/null); PID=$(cat "$G/idProduct" 2>/dev/null)
+[ -n "$VID" ] || VID=0x04e8
+[ -n "$PID" ] || PID=0x6860
+
+rm -f "$MOD/keep"
+: >> "$LOG"
+echo "=== hid-arsenal $ACTION keep=$KEEP delay=$DELAY $(date) ===" >> "$LOG"
+
+if [ "$KEEP" = 1 ]; then
+    touch "$MOD/keep"
+fi
+
+if [ "$DELAY" != 0 ]; then
+    if command -v setsid >/dev/null 2>&1; then
+        nohup setsid sh "$BIN/usb-watchdog.sh" "$DELAY" >/dev/null 2>&1 &
+    else
+        nohup sh "$BIN/usb-watchdog.sh" "$DELAY" >/dev/null 2>&1 &
+    fi
+    echo "[!] adb watchdog armed: restores adb in ${DELAY}s unless you pass --keep"
+fi
+
+if [ "$ACTION" = reset ]; then
+    sh "$BIN/usbarsenal-patched" -t lnx -f reset -v "$VID" -p "$PID" 2>&1 | tee -a "$LOG"
+    echo "[+] adb restored"
+    rm -f "$MOD/keep"
+    exit 0
+fi
+
+sh "$BIN/usbarsenal-patched" -t lnx -f hid -v "$VID" -p "$PID" 2>&1 | tee -a "$LOG"
+rc=$?
+
+if [ -c /dev/hidg0 ]; then
+    chmod 666 /dev/hidg0 /dev/hidg1 2>/dev/null
+    echo "[+] /dev/hidg0 is up: the host now sees a HID keyboard"
+    echo "[+] keystrokes: printf '\\0\\0\\x04\\0\\0\\0\\0\\0' > /dev/hidg0   (this is 'a')"
+    [ "$KEEP" = 1 ] && echo "[!] staying in HID mode; run 'hid-arsenal reset' to get adb back"
+else
+    echo "[-] no /dev/hidg0 after bind (rc=$rc) - is the v1.2 kernel flashed?" >&2
+fi
+exit $rc

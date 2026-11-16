@@ -1,0 +1,2 @@
+#!/sbin/sh
+. "$(dirname "$0")/customize.sh"

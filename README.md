@@ -198,7 +198,10 @@ The 318 MB NetHunter module is attached to the
   `patches/0006-usb-gadget-attach-hid-function.patch`; see `docs/USB-HID-CONFIGFS.md`,
   `docs/HID-NFC-CAR-FINDINGS.md` and `docs/HID-KERNEL-BUILD-NOTES.md`. Fixed and verified
   on the A20e: a hid-only configuration binds, `hidg_bind()` creates `/dev/hidg0`, and
-  macOS identifies the phone as a HID keyboard. KernelSU still works.
+  macOS identifies the phone as a HID keyboard. KernelSU still works. To actually turn it
+  on, flash `modules/a20e-hid-arsenal.zip` and run `su -c hid-arsenal` — the stock
+  NetHunter `usbarsenal` aborts on a false configfs check, so the module ships the patched
+  script plus the 60-second adb watchdog. See `modules/a20e-hid-arsenal/README.md`.
 - **NFC Arsenal** - the SM-A202F has no NFC controller and the ROM has no NFC HAL.
 - **CArsenal** - works only with a USB serial CAN adapter attached (`/dev/ttyUSB0`).
 

@@ -18,6 +18,7 @@ These are the exact files used on the device, with checksums.
 | `AutoADBWiFi-v1.0.2.zip` | 8406 | `fd85ed1a43fa67c75e532f75f922b044` |
 | `Nethunter_for_KernelSU-2026.2.zip` | 318548707 | `7f2c329401775b7f66e9403f13caf89d` |
 | `a20e-stability.zip` | 1544 | `9a6fddcff211092d6012d240125040f3` |
+| `a20e-hid-arsenal.zip` | 23169 | `22a722d124a3ad8ab970d3fb8dbb3195` |
 | `wireless-adb-v1.0.zip` | 17795 | `92a76435e97b23582562ff55316f72e5` |
 | `a20e-r15-hid-v1.2.zip` | 13631729 | `b445cf8cb216f1f58851f9a5bdabf06a` |
 | `a20e-r15-hid-v1.2-Image` | 28579176 | `30afc243bc1ddd825295dc398eee8949` |

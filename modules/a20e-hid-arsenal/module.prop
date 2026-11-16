@@ -1,0 +1,6 @@
+id=a20e-hid-arsenal
+name=a20e USB HID Arsenal
+version=1.0
+versionCode=1
+author=tay737
+description=Brings up a USB HID keyboard/mouse on the Galaxy A20e with the v1.2 kernel. Ships a patched NetHunter usbarsenal (stock one aborts on a false configfs check), a 60-second adb watchdog so a failed bind cannot strand the phone, and hid-arsenal to arm/reset it.
