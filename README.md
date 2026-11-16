@@ -190,9 +190,10 @@ The 318 MB NetHunter module is attached to the
 
 - **USB HID / USB Arsenal** - the Exynos gadget never binds configfs-linked functions other
   than adb, so `/dev/hidg0` never appears. Root cause and fix in
-  `patches/0006-usb-gadget-bind-linked-functions.patch`; see `docs/HID-NFC-CAR-FINDINGS.md`
-  and `docs/HID-KERNEL-BUILD-NOTES.md`. The patch compiles, but a bootable kernel needs
-  the original Eureka tree from the unmounted volume.
+  `patches/0006-usb-gadget-attach-hid-function.patch`; see `docs/USB-HID-CONFIGFS.md`,
+  `docs/HID-NFC-CAR-FINDINGS.md` and `docs/HID-KERNEL-BUILD-NOTES.md`. Fixed and verified
+  on the A20e: a hid-only configuration binds, `hidg_bind()` creates `/dev/hidg0`, and
+  macOS identifies the phone as a HID keyboard. KernelSU still works.
 - **NFC Arsenal** - the SM-A202F has no NFC controller and the ROM has no NFC HAL.
 - **CArsenal** - works only with a USB serial CAN adapter attached (`/dev/ttyUSB0`).
 

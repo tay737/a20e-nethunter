@@ -66,9 +66,14 @@ fails outright with `-22` / "needs at least one function".
 
 ### Fix
 
-`patches/0006-usb-gadget-bind-linked-functions.patch` moves everything staged on
-`gi->linked_func` into the configuration being bound, before the emptiness check. The adb
-path keeps working the way it did, and functions configfs actually linked now attach.
+`patches/0006-usb-gadget-attach-hid-function.patch` fixes both halves of the problem in
+`config_usb_cfg_link()`: while the config string reads `adb` the callback returned success
+before `usb_get_function()`, so a linked `hid.0` was never even allocated, and what did get
+allocated was parked on `gi->linked_func`, which `configfs_composite_bind()` never walks.
+The patch lets `hid.0` past the early return and attaches `hid` straight to the
+configuration, leaving adb and the boot-time init links on the stock path. Verified on the
+A20e: a hid-only bind reaches `hidg_bind()` and creates `/dev/hidg0`, and macOS prompts to
+identify the keyboard.
 
 ```sh
 ./scripts/enable-usb-hid-gadget.sh /path/to/kernel-tree   # applies the patch, enables f_hid

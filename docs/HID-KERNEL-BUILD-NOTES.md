@@ -23,7 +23,7 @@ then breaks the netfilter build. Extract it on a case-sensitive volume.
 
 | Patch | What it fixes |
 |---|---|
-| `0006-usb-gadget-bind-linked-functions.patch` | configfs parks linked functions on `gi->linked_func`; only the adb special case ever moves one, so `hid` never binds and `/dev/hidg0` is never created |
+| `0006-usb-gadget-attach-hid-function.patch` | while the config string is `adb`, `config_usb_cfg_link()` returns before allocating a linked `hid.0`, and allocated functions are parked on `gi->linked_func`, which bind never walks; the patch lets `hid` through and attaches it to the configuration. Verified on device: `/dev/hidg0` appears, other functions stay on the stock path |
 | `0007-f-hid-fix-spinlock-name.patch` | `hidg_disable()` used `hidg->read_spinlock`, a member that does not exist; f_hid had never been compiled because `CONFIG_USB_CONFIGFS_F_HID` was unset |
 | `0009-mach-o-host-devtable-data-section.patch` | the tree's own macOS portability shim puts modpost's `__devtable` in `__TEXT`; arm64 ld refuses text relocations, so it goes in `__DATA` |
 | `0010-tzdev-tzar-relative-incbin.patch` | `tz_deploy_tzar.c` builds its `.incbin` path from `KBUILD_SRC`, which is empty for an in-tree build, producing `/drivers/...` |

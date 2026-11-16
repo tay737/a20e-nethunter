@@ -16,13 +16,13 @@ if [ -z "$KERNEL_DIR" ] || [ ! -d "$KERNEL_DIR" ]; then
 fi
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-PATCH="$HERE/../patches/0006-usb-gadget-bind-linked-functions.patch"
+PATCH="$HERE/../patches/0006-usb-gadget-attach-hid-function.patch"
 CONFIGFS="$KERNEL_DIR/drivers/usb/gadget/configfs.c"
 DEFCONFIG="$KERNEL_DIR/arch/arm64/configs/exynos7885-a20e_defconfig"
 
 [ -f "$CONFIGFS" ] || { echo "no drivers/usb/gadget/configfs.c in $KERNEL_DIR" >&2; exit 1; }
 
-if grep -q "Attach whatever configfs linked" "$CONFIGFS"; then
+if grep -q 'strcmp(f->name, "hid") == 0' "$CONFIGFS"; then
     echo "configfs.c: already patched"
 else
     echo "configfs.c: applying $(basename "$PATCH")"

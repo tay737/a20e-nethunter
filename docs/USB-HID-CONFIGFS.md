@@ -45,33 +45,86 @@ questions.
 
 ## The fix
 
-`patches/0006-usb-gadget-bind-linked-functions.patch` drains `linked_func` into
-the configuration being bound, just before the empty-config check, but only
-when that configuration is still empty:
+There are two separate defects in `config_usb_cfg_link()`, and both have to be
+handled. `patches/0006-usb-gadget-attach-hid-function.patch` does that for the
+`hid.0` instance and leaves every other function on the stock path.
+
+### 1. The link is swallowed before it is ever allocated
+
+When the configuration's string list holds a mode name that is not `Conf 1`
+— `adb` is the only one this ROM uses — the callback takes an early return that
+sits before the `usb_get_function()` call:
 
 ```c
-if (!list_empty(&gi->linked_func)) {
-	cfg_c = list_first_entry_or_null(&gi->cdev.configs,
-					 struct usb_configuration, list);
-	if (cfg_c) {
-		cf = container_of(cfg_c, struct config_usb_cfg, c);
-		if (list_empty(&cf->func_list)) {
-			list_for_each_entry_safe(sf, stmp, &gi->linked_func, list)
-				list_move_tail(&sf->list, &cf->func_list);
-		}
+if (strcmp(cn->configuration, "Conf 1")!= 0) {
+	if (strcmp(cn->configuration, "adb") == 0) {
+		/* move adb out of linked_func, if it happens to be there */
 	}
+	gi->gsi_boot=1;
+	ret = 0;
+	goto out;          /* <- success, nothing was allocated */
 }
 ```
 
-The `list_empty(&cf->func_list)` guard matters. At boot this ROM leaves a
-dozen init links parked (accessory, acm, mtp, ptp, rndis, midi, ...) while
-stock code attaches adb. Draining unconditionally drags all of them into the
-bound composite; guarding on an empty configuration leaves the boot path
-exactly as stock and only kicks in for the "nothing but the function I linked"
-case, which is what a HID-only gadget is.
+So while the gadget is in `adb` mode, `mkdir functions/hid.0` followed by
+`ln -s ../../../../usb_gadget/g1/functions/hid.0 configs/b.1/f1d` reports
+success and leaves no trace: no function instance is taken, nothing is parked,
+and the bind later binds only adb. This is why the `hidg_bind` probes never
+fired even on a kernel that already had the older draining patch — the function
+the patch was looking for had never been created. A bind-time diagnostic dump
+made this visible:
 
-A kernel carrying this patch binds that linked function, so a hid-only
-configuration reaches `usb_add_function()` and `hidg_bind()` runs.
+```
+usb: bind parked 'mtp' ... usb: bind parked 'ncm'
+usb: bind config already has 'adb'
+```
+
+No `hid` in either list, with the link accepted.
+
+The patch lets the `hid.0` instance past that early return
+(`strcmp(usb_func_ci->ci_namebuf, "hid.0") != 0` keeps stock behaviour for every
+other instance, including `ffs.adb` during boot).
+
+### 2. The function is parked instead of attached
+
+Once it does reach the tail of the callback, stock code parks it on
+`linked_func`, and `configfs_composite_bind()` never walks that list, so the
+function never reaches `usb_add_function()`. The patch attaches `hid` to the
+configuration it was linked into instead:
+
+```c
+	if (f->name && strcmp(f->name, "hid") == 0)
+		list_add_tail(&f->list, &cfg->func_list);
+	else
+		list_add_tail(&f->list, &gi->linked_func);
+```
+
+Only `hid` is diverted. Every other function keeps the parked behaviour because
+boot depends on it: this ROM leaves a dozen init links parked (accessory, acm,
+mtp, ptp, rndis, midi, ncm, ...) and attaches adb through the GSI path. An
+earlier revision that attached every non-adb function made the device bootloop
+(no USB enumeration at all), so the narrow scope is deliberate.
+
+### Result
+
+Boot is unchanged and adb comes up as before. When userspace clears the links
+and builds a hid-only configuration, the bind does reach `hidg_bind()`:
+
+```
+usb: bind parked 'mtp' ... usb: bind parked 'adb'
+usb: bind config already has 'hid'
+hidg_bind: eps in=ep1in out=ep1out
+hidg_bind: created hidg0
+configfs-gadget gadget: high-speed config #1: b
+```
+
+`/dev/hidg0` exists for the lifetime of that configuration (the probe script
+reported `class=[hidg0] dev=[/dev/hidg0]`), and macOS shows its "Press the Shift
+key to verify your keyboard" prompt — an end-to-end confirmation that the host
+sees a HID keyboard rather than a vendor-specific interface.
+
+The gadget reverts to adb, and `/dev/hidg0` disappears, whenever the watchdog
+or `usbarsenal` restores `sys.usb.config=adb`. That is expected.
 
 ## Booting: the panel config trap
 
@@ -105,10 +158,6 @@ bash ~/Documents/a20e-nethunter/scripts/build-tree-macos.sh /Volumes/a20e-kernel
 bash ~/Documents/a20e-nethunter/scripts/flash-kernel.sh \
      /Volumes/a20e-kernel-cs/tree302/arch/arm64/boot/Image
 ```
-
-`CONFIG_CUSTOM_BACKLIGHT_SYSFS_NODE=y` is mandatory here: the dpu_7885 A40
-panel driver references `struct lcd_info::custom_brightness_enable`
-unconditionally, so the build fails without it.
 
 ## Restoring
 
