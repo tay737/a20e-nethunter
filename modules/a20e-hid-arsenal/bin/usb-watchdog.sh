@@ -16,13 +16,22 @@ if [ -f "$MOD/keep" ]; then
     exit 0
 fi
 
+# Let init/framework rebuild the adb gadget: this is the path that has been
+# verified on this device. If the port is still unbound afterwards, fall back to
+# putting ffs.adb back over configfs directly.
 echo "" > $G/UDC 2>/dev/null
-rm -f $C/f1 2>/dev/null
 setprop sys.usb.ffs.ready 0
 setprop sys.usb.config adb
-sleep 1
+sleep 2
 setprop sys.usb.ffs.ready 1
 start adbd 2>/dev/null
-sleep 1
-echo "$DWC" > $G/UDC 2>/dev/null
+sleep 2
+
+if [ "$(cat $G/UDC 2>/dev/null)" != "$DWC" ] && [ -d $G/functions/ffs.adb ]; then
+    for l in $(find $C -maxdepth 1 -type l 2>/dev/null); do rm -f "$l"; done
+    ln -sf $G/functions/ffs.adb $C/f1 2>/dev/null
+    echo "$DWC" > $G/UDC 2>/dev/null
+    echo "watchdog: configfs fallback bind at $(date)" >> "$LOG"
+fi
+
 echo "watchdog: restored adb at $(date)" >> "$LOG"

@@ -112,10 +112,11 @@ chroot $R /bin/bash -c 'apt-get update && apt-get install -y --no-install-recomm
 
 ## Building the kernel
 
-**Prebuilt kernel:** the [v1.2 release](https://github.com/tay737/a20e-nethunter/releases/tag/v1.2)
-ships `a20e-r15-hid-v1.2.zip` (flash in TWRP) and the raw `Image`. That image has
-working USB HID — `/dev/hidg0` exists once a HID gadget is armed — with KernelSU
-and adb unchanged.
+**Prebuilt kernel:** the [v1.3 release](https://github.com/tay737/a20e-nethunter/releases/tag/v1.3)
+ships `a20e-r15-v1.3.zip` (flash in TWRP), the raw `Image`, and the
+`a20e-hid-arsenal.zip` module that arms HID. That image has working USB HID
+(`/dev/hidg0` once a gadget is armed), `/dev/rfkill` for bluebinder/Bluetooth HID,
+with KernelSU and adb unchanged.
 
 The kernel is Eureka's R15.1.1 tree for the A20e, built locally on this Mac with
 Homebrew clang 23 and Homebrew LLD — the same toolchain as the working `4.4.302-p6`

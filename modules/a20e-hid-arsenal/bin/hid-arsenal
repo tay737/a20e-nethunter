@@ -1,7 +1,7 @@
 #!/system/bin/sh
 # a20e-hid-arsenal: bring up (or drop) a USB HID gadget on the Galaxy A20e.
 #
-#   hid-arsenal              HID keyboard + mouse, adb restored after 60 s
+#   hid-arsenal              HID keyboard, adb restored after 60 s
 #   hid-arsenal --keep       HID stays up until you run: hid-arsenal reset
 #   hid-arsenal reset        back to adb now
 #   hid-arsenal --delay 0    no automatic restore at all

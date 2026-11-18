@@ -299,9 +299,10 @@ function switch_funcs(){
                 ;;
             hid)
                 IS_HID_SELECTED=0
+                ## Keyboard only. Linking hid.1 as well makes this ROM bind two
+                ## hid functions and then fail the post-bind check, which reverts
+                ## the whole configuration; hid.0 on its own binds cleanly.
                 ln -s $DIR_ALL_FUNCS/hid.0 $DIR_CUR_FUNCS/$SYMLINK_FUNC_NAME
-                inc_funcs_order
-                ln -s $DIR_ALL_FUNCS/hid.1 $DIR_CUR_FUNCS/$SYMLINK_FUNC_NAME
                 inc_funcs_order
                 FUNCS_DESC+=('hid')
                 ;;
@@ -347,14 +348,14 @@ function switch_funcs(){
 
     ## 3. Check If the hid enabled, but still no /dev/hidg0 and /dev/hidg1 available. ##
     if [ $IS_HID_SELECTED -eq 0 ]; then
-        if [ ! -c /dev/hidg0 -o ! -c /dev/hidg1 ]; then
-            bklog "[-] No /dev/hidg0 or /dev/hidg1 is up"
+        if [ ! -c /dev/hidg0 ]; then
+            bklog "[-] No /dev/hidg0 is up"
             bklog "[!] Reverting usb state to 'adb'"
             ## If something goes wrong, revert back to the dedault usb function which should be "adb" ##
             revert_to_ori_state
             exit 1
         else
-            chmod 666 /dev/hidg0 /dev/hidg1
+            chmod 666 /dev/hidg0 /dev/hidg1 2>/dev/null
         fi
     fi
 

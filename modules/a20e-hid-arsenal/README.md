@@ -24,11 +24,15 @@ was used to bring HID up safely during development.
 ## Usage
 
 ```sh
-su -c hid-arsenal                 # HID keyboard + mouse, adb restored after 60 s
+su -c hid-arsenal                 # HID keyboard, adb restored after 60 s
 su -c 'hid-arsenal --keep'        # HID stays up until you reset
 su -c hid-arsenal reset           # back to adb immediately
 su -c 'hid-arsenal --delay 0'     # no automatic restore, no watchdog
 ```
+
+Keyboard only, deliberately: linking `hid.1` (mouse) as well makes this ROM bind
+two hid functions and then fail its own post-bind check, which reverts the whole
+configuration. `hid.0` on its own binds cleanly every time.
 
 Turning HID on takes the port away from adb, so:
 

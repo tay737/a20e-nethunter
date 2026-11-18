@@ -3,8 +3,9 @@
 **Where to get them**
 
 - Kernels, helper modules and APKs: committed in this repo — `kernel/`, `modules/`, `tools/`
-- Working HID kernel (flashable): [v1.2](https://github.com/tay737/a20e-nethunter/releases/tag/v1.2) —
-  `a20e-r15-hid-v1.2.zip` for TWRP and the raw `a20e-r15-hid-v1.2-Image`
+- Working HID kernel (flashable): [v1.3](https://github.com/tay737/a20e-nethunter/releases/tag/v1.3) —
+  `a20e-r15-v1.3.zip` for TWRP, `a20e-r15-v1.3-Image`, and the
+  `a20e-hid-arsenal.zip` module that arms HID
 - NetHunter module (318 MB, too big for a normal git file): release asset
   [v1.0](https://github.com/tay737/a20e-nethunter/releases/download/v1.0/Nethunter_for_KernelSU-2026.2.zip)
 
@@ -18,7 +19,9 @@ These are the exact files used on the device, with checksums.
 | `AutoADBWiFi-v1.0.2.zip` | 8406 | `fd85ed1a43fa67c75e532f75f922b044` |
 | `Nethunter_for_KernelSU-2026.2.zip` | 318548707 | `7f2c329401775b7f66e9403f13caf89d` |
 | `a20e-stability.zip` | 1544 | `9a6fddcff211092d6012d240125040f3` |
-| `a20e-hid-arsenal.zip` | 23169 | `22a722d124a3ad8ab970d3fb8dbb3195` |
+| `a20e-hid-arsenal.zip` | 10740 | `b3f2e54b047b71806f3aae9fcb8a43b9` |
+| `a20e-r15-v1.3.zip` | 13632438 | `2b25432cce53299c42b0018d7621cfb9` |
+| `a20e-r15-v1.3-Image` | 28596328 | `c027caf1d01479d702f4f7d5048a04ac` |
 | `wireless-adb-v1.0.zip` | 17795 | `92a76435e97b23582562ff55316f72e5` |
 | `a20e-r15-hid-v1.2.zip` | 13631729 | `b445cf8cb216f1f58851f9a5bdabf06a` |
 | `a20e-r15-hid-v1.2-Image` | 28579176 | `30afc243bc1ddd825295dc398eee8949` |
