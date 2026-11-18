@@ -20,7 +20,7 @@ These are the exact files used on the device, with checksums.
 | `Nethunter_for_KernelSU-2026.2.zip` | 318548707 | `7f2c329401775b7f66e9403f13caf89d` |
 | `a20e-stability.zip` | 1544 | `9a6fddcff211092d6012d240125040f3` |
 | `a20e-hid-arsenal.zip` | 10740 | `b3f2e54b047b71806f3aae9fcb8a43b9` |
-| `a20e-r15-v1.3.zip` | 13632438 | `2b25432cce53299c42b0018d7621cfb9` |
+| `a20e-r15-v1.3.zip` | 13638133 | `2b25432cce53299c42b0018d7621cfb9` |
 | `a20e-r15-v1.3-Image` | 28596328 | `c027caf1d01479d702f4f7d5048a04ac` |
 | `wireless-adb-v1.0.zip` | 17795 | `92a76435e97b23582562ff55316f72e5` |
 | `a20e-r15-hid-v1.2.zip` | 13631729 | `b445cf8cb216f1f58851f9a5bdabf06a` |
